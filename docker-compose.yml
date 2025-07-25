@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: blog
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./logs/db:/var/log/postgresql
+    command: >
+      postgres
+        -c logging_collector=on
+        -c log_directory=/var/log/postgresql
+        -c log_filename=postgresql.log
+
+  web:
+    build: .
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:example@db:5432/blog
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs/app:/app/logs
+
+volumes:
+  db-data:

@@ -1,0 +1,35 @@
+name: Build and Deploy Blog
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Клонируем код
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Копируем файлы на сервер
+      - name: Copy project to server
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.SERVER_HOST }}        # IP или домен
+          username: ${{ secrets.SERVER_USER }}    # пользователь на сервере
+          key: ${{ secrets.SSH_PRIVATE_KEY }}     # приватный ключ без пароля
+          source: "."                             # копируем всё содержимое
+          target: "~/blog-server"                 # папка на сервере
+
+      # 3. По SSH заходим и перезапускаем контейнеры
+      - name: SSH & Restart containers
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/blog-server
+            docker compose pull
+            docker compose up -d --build

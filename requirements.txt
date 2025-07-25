@@ -1,0 +1,5 @@
+﻿fastapi
+uvicorn[standard]
+sqlalchemy
+databases[postgresql]
+psycopg2-binary
