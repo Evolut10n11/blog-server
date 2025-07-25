@@ -96,3 +96,5 @@ Settings → Actions → Runners → New self-hosted runner (Windows) → уст
 Runner должен иметь права на запуск Docker
 
 Автор: Иван Rodionov
+
+
