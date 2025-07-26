@@ -15,7 +15,7 @@
 │   └── db/               # Логи БД (.gitkeep)
 ├── Dockerfile            # Описание сборки образа приложения
 ├── docker-compose.yml    # Описание сервисов Docker Compose
-└── GUIDE.md              # Инструкция по проекту
+└── README.md              # Инструкция по проекту
 ```
 
 ---
