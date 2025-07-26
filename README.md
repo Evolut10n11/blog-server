@@ -1,100 +1,175 @@
-Blog Server
+# Blog Server
 
-Минимальный блог‑сервер на FastAPI, запускаемый в Docker‑контейнере с базой PostgreSQL и автоматическим деплоем через GitHub Actions.
+Минимальный блог-сервер на FastAPI, Docker Compose и PostgreSQL с автоматическим деплоем через GitHub Actions (self-hosted runner).
 
-Структура проекта
+---
 
+## Структура проекта
+
+```
 .
 ├── app/                  # Исходники приложения
 │   └── main.py           # FastAPI-приложение
-├── logs/                 # Точка монтирования для логов
-├── Dockerfile            # Образ приложения
+├── logs/                 # Каталог для логов (игнорируется Git, содержит файлы .gitkeep)
+│   ├── app/              # Логи приложения (содержит .gitkeep)
+│   └── db/               # Логи БД (содержит .gitkeep)
+├── Dockerfile            # Описание сборки образа приложения
 ├── docker-compose.yml    # Описание сервисов Docker Compose
 └── README.md             # Инструкция по проекту
+```
 
-Требования
+> **Примечание:** Git не хранит пустые папки, поэтому оба подкаталога в `logs/` должны содержать файл `.gitkeep` (можно пустой) для трекинга.
 
-Docker (Desktop или Engine с поддержкой Compose)
+---
 
-Docker Compose
+## Требования
 
-Git
+- **Docker** (Desktop или Docker Engine + Compose)  
+- **Docker Compose**  
+- **Git**  
+- *(опционально)* Python 3.11 и зависимости из `requirements.txt` для локальной разработки без Docker
 
-(опционально для локальной dev) Python 3.11 и зависимости из requirements.txt
+---
 
-Локальный запуск
+## Локальный запуск
 
-Через Docker
+### 1. Подготовка каталогов для логов
 
+> На хосте (до первого запуска) создайте каталоги и файлы-заглушки:
+
+```bash
+# Linux / macOS
+mkdir -p logs/app logs/db
+touch logs/app/.gitkeep logs/db/.gitkeep
+```
+
+```powershell
+# Windows PowerShell
+New-Item -ItemType Directory logs/app -Force
+New-Item -ItemType Directory logs/db -Force
+New-Item -ItemType File logs/app/.gitkeep -Force
+New-Item -ItemType File logs/db/.gitkeep -Force
+```
+
+### 2. Запуск через Docker Compose
+
+```bash
 cd blog-server
 docker compose up --build -d
+```
 
-Контейнеры доступны по адресу http://localhost:8080
+- Приложение доступно по адресу: `http://localhost:8080`  
+- Логи приложения пишутся в папку `logs/app`  
+- Логи PostgreSQL пишутся в папку `logs/db`
 
-Логи приложения в logs/app, логи БД в logs/db
+### 3. Локальная разработка без Docker
 
-Локальная разработка без Docker
-
+```bash
+cd blog-server
 python -m venv .venv
-. .venv/Scripts/Activate.ps1
+. .venv/Scripts/Activate.ps1   # PowerShell
+# или: source .venv/bin/activate   # bash/zsh
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+```
 
-API
+---
 
-GET /posts
+## API
 
-Возвращает список публикаций.
+### GET /posts
+
+Возвращает список всех публикаций.
+
+```bash
 curl http://localhost:8080/posts
+```
 
-Response:
-[]
+**Response (200 OK)**
 
-POST /posts
+```json
+[
+  { "id": 1, "title": "Hello world", "content": "My first post!" }
+]
+```
+
+---
+
+### POST /posts
+
+Добавляет новую публикацию.
+
+**Request**
+
+```bash
 curl -X POST http://localhost:8080/posts \
   -H "Content-Type: application/json" \
-  -d '{"title":"Hello","content":"World"}'
-Response:
-{"id":1,"title":"Hello","content":"World"}
+  -d '{"title":"Another post","content":"Some content here"}'
+```
 
-Список технологий
+**Response (200 OK)**
 
-Python 3.11
+```json
+{ "id": 2, "title": "Another post", "content": "Some content here" }
+```
 
-FastAPI, Uvicorn
+---
 
-SQLAlchemy, Databases
+## Список технологий
 
-PostgreSQL
+- Python 3.11, FastAPI, Uvicorn  
+- SQLAlchemy, Databases  
+- PostgreSQL  
+- Docker, Docker Compose  
+- GitHub Actions с self-hosted runner на Windows  
 
-Docker, Docker Compose
+---
 
-GitHub Actions (CI/CD)
+## Smoke-тест
 
-Smoke‑тест
+1. `curl GET /posts` → `[]`  
+2. `curl POST /posts` → создаёт и возвращает новую запись  
+3. `curl GET /posts` → публикация должна быть в списке  
 
-curl GET /posts → []
+---
 
-curl POST /posts → возвращает созданный объект
+## CI/CD (GitHub Actions)
 
-curl GET /posts → публикация в списке
+При пуше в ветку `main` запускается workflow `.github/workflows/deploy.yml`:
 
-CI/CD (GitHub Actions)
+```yaml
+name: Local Deploy
 
-При пуше в ветку main запускается workflow .github/workflows/deploy.yml, который на self‑hosted runner:
+on:
+  push:
+    branches:
+      - main
 
-Проверяет код (actions/checkout@v3).
+jobs:
+  deploy:
+    runs-on: self-hosted
 
-Выполняет:
-docker compose down || true
-docker compose up -d --build
+    steps:
+      - uses: actions/checkout@v3
 
-Для работы CI нужен self-hosted runner:
+      - name: Build & Restart Containers
+        shell: powershell
+        run: |
+          cd $Env:GITHUB_WORKSPACE
+          docker compose down
+          docker compose up -d --build
+```
 
-Settings → Actions → Runners → New self-hosted runner (Windows) → установка и запуск как службы.
+### Установка self-hosted runner (Windows)
 
-Runner должен иметь права на запуск Docker
+```powershell
+mkdir C:ctions-runner
+cd C:ctions-runner
+Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.x.x/actions-runner-win-x64-2.x.x.zip -OutFile actions-runner.zip
+Expand-Archive .ctions-runner.zip .
+.\config.cmd --url https://github.com/Evolut10n11/blog-server --token YOUR_TOKEN_HERE
+.\svc install
+.\svc start
+```
 
-Автор: Иван Rodionov
-
-
+_Автор: Иван Rodionov_
