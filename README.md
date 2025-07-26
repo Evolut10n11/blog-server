@@ -1,4 +1,4 @@
-# Blog Server Guide
+# Blog Server
 
 Минимальный блог-сервер на FastAPI, Docker Compose и PostgreSQL с автоматическим деплоем через GitHub Actions (self-hosted runner).
 
