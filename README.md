@@ -131,26 +131,29 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Build & Restart Containers
+      - name: Build and restart containers
         shell: powershell
         run: |
-          cd $Env:GITHUB_WORKSPACE
-          docker compose down
-          docker compose up -d --build
 ```
 
 ### Установка self-hosted runner (Windows)
 
 ```powershell
-mkdir C:ctions-runner
-cd C:ctions-runner
-Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.x.x/actions-runner-win-x64-2.x.x.zip -OutFile actions-runner.zip
-Expand-Archive .ctions-runner.zip .
-.\config.cmd --url https://github.com/Evolut10n11/blog-server --token YOUR_TOKEN_HERE
-.\svc install
-.\svc start
+Create a folder under the drive root
+
+mkdir actions-runner; cd actions-runner
+Download the latest runner package
+
+Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.326.0/actions-runner-win-x64-2.326.0.zip -OutFile actions-runner-win-x64-2.326.0.zip
+Extract the installer
+Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/actions-runner-win-x64-2.326.0.zip", "$PWD")
+Create the runner and start the configuration experience
+./config.cmd --url https://github.com/Evolut10n11/blog-server --token ВАШ_ТОКЕН_НА_ГИТ
+Run it!
+./run.cmd
 ```
 
 _Автор: Иван Rodionov_
