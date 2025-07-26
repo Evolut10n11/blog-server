@@ -1,0 +1,8 @@
+2025-07-25 22:40:35,708 INFO Connected to database postgresql://postgres:********@db:5432/blog
+2025-07-25 22:40:35,708 INFO ✅ Connected to DB
+2025-07-25 22:42:33,662 INFO GET /posts
+2025-07-25 22:43:00,543 INFO GET /posts
+2025-07-25 22:43:32,990 INFO POST /posts: title='Test' content='Hello'
+2025-07-25 22:43:40,320 INFO GET /posts
+2025-07-25 22:43:51,536 INFO Disconnected from database postgresql://postgres:********@db:5432/blog
+2025-07-25 22:43:51,536 INFO 🔌 Disconnected from DB
