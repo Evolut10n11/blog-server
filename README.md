@@ -31,25 +31,8 @@
 
 ## Локальный запуск
 
-### 1. Подготовка каталогов для логов
 
-> На хосте (до первого запуска) создайте каталоги и файлы-заглушки:
-
-```bash
-# Linux / macOS
-mkdir -p logs/app logs/db
-touch logs/app/.gitkeep logs/db/.gitkeep
-```
-
-```powershell
-# Windows PowerShell
-New-Item -ItemType Directory logs/app -Force
-New-Item -ItemType Directory logs/db -Force
-New-Item -ItemType File logs/app/.gitkeep -Force
-New-Item -ItemType File logs/db/.gitkeep -Force
-```
-
-### 2. Запуск через Docker Compose
+### 1. Запуск через Docker Compose
 
 ```bash
 cd blog-server
@@ -60,7 +43,7 @@ docker compose up --build -d
 - Логи приложения пишутся в папку `logs/app`  
 - Логи PostgreSQL пишутся в папку `logs/db`
 
-### 3. Локальная разработка без Docker
+### 2. Локальная разработка без Docker
 
 ```bash
 cd blog-server
